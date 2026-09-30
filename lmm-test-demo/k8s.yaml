@@ -1,0 +1,158 @@
+# Namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: lmm-test-demo
+
+---
+# User Service Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-service
+  namespace: lmm-test-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: user-service
+  template:
+    metadata:
+      labels:
+        app: user-service
+        version: latest
+    spec:
+      containers:
+      - name: user-service
+        image: user-service:1.0
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8081
+        resources:
+          limits:
+            cpu: "1"
+            memory: 1Gi
+          requests:
+            cpu: 10m
+        env:
+        - name: TZ
+          value: Asia/Shanghai
+
+---
+# User Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-service
+  namespace: lmm-test-demo
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8081
+      targetPort: 8081
+  selector:
+    app: user-service
+
+---
+# Order Service Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-service
+  namespace: lmm-test-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: order-service
+  template:
+    metadata:
+      labels:
+        app: order-service
+        version: latest
+    spec:
+      containers:
+      - name: order-service
+        image: order-service:1.0
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8082
+        resources:
+          limits:
+            cpu: "1"
+            memory: 1Gi
+          requests:
+            cpu: 10m
+        env:
+        - name: TZ
+          value: Asia/Shanghai
+        - name: USER_SERVICE_URL
+          value: http://user-service:8081
+
+---
+# Order Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: order-service
+  namespace: lmm-test-demo
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8082
+      targetPort: 8082
+  selector:
+    app: order-service
+
+---
+# Web Service Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-service
+  namespace: lmm-test-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web-service
+  template:
+    metadata:
+      labels:
+        app: web-service
+        version: latest
+    spec:
+      containers:
+      - name: web-service
+        image: web-service:1.0
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+        resources:
+          limits:
+            cpu: "1"
+            memory: 1Gi
+          requests:
+            cpu: 10m
+        env:
+        - name: TZ
+          value: Asia/Shanghai
+        - name: USER_SERVICE_URL
+          value: http://user-service:8081
+        - name: ORDER_SERVICE_URL
+          value: http://order-service:8082
+
+---
+# Web Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-service
+  namespace: lmm-test-demo
+spec:
+  type: NodePort
+  ports:
+    - port: 8080
+      targetPort: 8080
+  selector:
+    app: web-service
