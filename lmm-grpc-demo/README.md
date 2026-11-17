@@ -72,7 +72,7 @@ lmm-grpc-demo/
 ├── test-e2e.sh                    ← 端到端验证脚本
 └── README.md
 ```
-
+ 
 ## 对外 REST 接口（与 lmm-test-demo 完全一致）
 
 | 接口 | 说明 | 预期返回 |
