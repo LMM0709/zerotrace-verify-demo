@@ -1,0 +1,178 @@
+# Namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: lmm-grpc-demo
+
+---
+# User Service Deployment（仅 gRPC 9091）
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-service
+  namespace: lmm-grpc-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: user-service
+  template:
+    metadata:
+      labels:
+        app: user-service
+        version: latest
+    spec:
+      containers:
+      - name: user-service
+        image: user-service-grpc:1.0
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: grpc
+          containerPort: 9091
+        resources:
+          limits:
+            cpu: "1"
+            memory: 1Gi
+          requests:
+            cpu: 10m
+        env:
+        - name: TZ
+          value: Asia/Shanghai
+        readinessProbe:
+          tcpSocket:
+            port: grpc
+          initialDelaySeconds: 10
+          periodSeconds: 10
+
+---
+# User Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-service
+  namespace: lmm-grpc-demo
+spec:
+  type: ClusterIP
+  ports:
+    - name: grpc
+      port: 9091
+      targetPort: 9091
+  selector:
+    app: user-service
+
+---
+# Order Service Deployment（仅 gRPC 9092）
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-service
+  namespace: lmm-grpc-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: order-service
+  template:
+    metadata:
+      labels:
+        app: order-service
+        version: latest
+    spec:
+      containers:
+      - name: order-service
+        image: order-service-grpc:1.0
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: grpc
+          containerPort: 9092
+        resources:
+          limits:
+            cpu: "1"
+            memory: 1Gi
+          requests:
+            cpu: 10m
+        env:
+        - name: TZ
+          value: Asia/Shanghai
+        - name: USER_SERVICE_GRPC_ADDR
+          value: user-service:9091
+        readinessProbe:
+          tcpSocket:
+            port: grpc
+          initialDelaySeconds: 10
+          periodSeconds: 10
+
+---
+# Order Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: order-service
+  namespace: lmm-grpc-demo
+spec:
+  type: ClusterIP
+  ports:
+    - name: grpc
+      port: 9092
+      targetPort: 9092
+  selector:
+    app: order-service
+
+---
+# Web Service Deployment（对外 REST，9090；内部全部走 gRPC）
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-service
+  namespace: lmm-grpc-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web-service
+  template:
+    metadata:
+      labels:
+        app: web-service
+        version: latest
+    spec:
+      containers:
+      - name: web-service
+        image: web-service-grpc:1.0
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 9090
+        resources:
+          limits:
+            cpu: "1"
+            memory: 1Gi
+          requests:
+            cpu: 10m
+        env:
+        - name: TZ
+          value: Asia/Shanghai
+        - name: USER_SERVICE_GRPC_ADDR
+          value: user-service:9091
+        - name: ORDER_SERVICE_GRPC_ADDR
+          value: order-service:9092
+        readinessProbe:
+          httpGet:
+            path: /api/webquery/queryZero
+            port: 9090
+          initialDelaySeconds: 15
+          periodSeconds: 10
+
+---
+# Web Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-service
+  namespace: lmm-grpc-demo
+spec:
+  type: NodePort
+  ports:
+    - port: 9090
+      targetPort: 9090
+  selector:
+    app: web-service

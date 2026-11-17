@@ -46,7 +46,7 @@ public class OrderController {
         Map<String, String> userResult = restTemplate.getForObject(
             userServiceUrl + "/api/userquery/user",
             Map.class
-        );
+        );  
         logger.info("order service error endpoint called, throwing exception");
         throw new RuntimeException("Order service error");
     }

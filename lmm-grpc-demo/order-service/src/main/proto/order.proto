@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package com.example.grpc;
+
+option java_package = "com.example.grpc";
+option java_multiple_files = true;
+option java_outer_classname = "OrderProto";
+
+// 订单查询请求
+message GetOrderRequest {
+  string order_id = 1;
+}
+
+// 订单信息响应
+message OrderReply {
+  string order_id = 1;
+  string order_name = 2;
+  string name = 3;
+}
+
+// 订单服务：与原 order-service 的 /api/orderquery/order 与 /api/orderquery/order/error 等价
+service OrderService {
+  rpc GetOrder (GetOrderRequest) returns (OrderReply);
+
+  // 先查询用户，再返回 gRPC 错误，用于验证出错链路
+  rpc GetOrderError (GetOrderRequest) returns (OrderReply);
+}

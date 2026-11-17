@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package com.example.grpc;
+
+option java_package = "com.example.grpc";
+option java_multiple_files = true;
+option java_outer_classname = "UserProto";
+
+// 用户查询请求
+message GetUserRequest {
+  string id = 1;
+}
+
+// 用户信息响应
+message UserReply {
+  string id = 1;
+  string name = 2;
+}
+
+// 用户服务：与原 user-service 的 GET /api/userquery/user 等价
+service UserService {
+  rpc GetUser (GetUserRequest) returns (UserReply);
+}

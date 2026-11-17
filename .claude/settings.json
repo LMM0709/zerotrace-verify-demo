@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mvn *)",
+      "Bash(docker build *)",
+      "Bash(docker run *)",
+      "Bash(docker save *)",
+      "Bash(docker ps *)",
+      "Bash(kubectl get *)",
+      "Bash(kubectl create *)",
+      "Bash(kubectl apply *)",
+      "Bash(kubectl delete *)",
+      "Bash(kubectl wait *)",
+      "Bash(kubectl rollout *)",
+      "Bash(kubectl exec *)",
+      "Bash(sh *)",
+      "Bash(mkdir *)",
+      "Bash(kubectl config *)",
+      "Bash(cat > *)",
+      "Bash(printf *)"
+    ]
+  }
+}

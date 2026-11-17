@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: image-loader
+  namespace: lmm-grpc-demo
+spec:
+  hostPID: true
+  containers:
+  - name: loader
+    image: registry.cn-beijing.aliyuncs.com/deepflow-demo/opentelemetry-javaagent:1.15.0
+    imagePullPolicy: IfNotPresent
+    command: ["sh", "-c", "sleep 3600"]
+    securityContext:
+      privileged: true
+    volumeMounts:
+    - name: tar-files
+      mountPath: /tar
+    - name: containerd-sock
+      mountPath: /run/containerd
+    - name: usr-bin
+      mountPath: /host-usr-bin
+    - name: lib64
+      mountPath: /lib64
+  volumes:
+  - name: tar-files
+    hostPath:
+      path: /tmp
+  - name: containerd-sock
+    hostPath:
+      path: /run/containerd
+  - name: usr-bin
+    hostPath:
+      path: /usr/bin
+  - name: lib64
+    hostPath:
+      path: /lib64

@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: order-service
+
+# 仅使用 gRPC 端口（与 lmm-test-demo 的 8082 错开）
+grpc:
+  server:
+    port: 9092
+    address: 0.0.0.0
+
+user:
+  service:
+    grpc-address: ${USER_SERVICE_GRPC_ADDR:user-service:9091}
